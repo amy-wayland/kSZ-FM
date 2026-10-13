@@ -62,3 +62,5 @@ python 05_plot_datavector.py --cap cap_profile.npz --label "FLAMINGO L1_m9"
 
 #### 05_plot_datavector.py:
 - Plots the stacked kSZ profile as a function of aperture radius.
+
+## Part 2: Lightcone Baryonification
