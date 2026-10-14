@@ -71,7 +71,7 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 ### Pipeline
 
 #### fetch_flamingo_soap.py
-- Downloads the halo catalogues:
+- Download the halo catalogues:
   - Streams only the needed columns and rows of the SOAP-HBT catalogues from the public FLAMINGO server into small local files (`soap_subset/').
   - Writes 'flamingo_shells_z.txt' (shell redshift edges) and 'flamingo_halo_files.txt' (catalogue paths), which the run script reads.
   - The mass cuts only decide what is downloaded. Fetch at or below the cuts used in step 3.
@@ -101,4 +101,13 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
  
     ```bash
     python validate_lightcone_hmf.py halo_lightcone_flamingo_subhalos_obs750.h5 --shells 0 5 10 20 30 40 --out plots/hmf
+    ```
+
+#### fetch_healpix_shell.py
+- Download a DMO map shell:
+  - Downloads one FLAMINGO HEALPix shell, by default 'DarkMatterMass' at $N_{\rm side} = 4096$. A given shell $y$ covers $0.05 y < z < 0.05 (1+y)$.
+  - Prints the comoving radii of the shell in Mpc/h.
+ 
+    ```bash
+    python fetch_healpix_shell.py --observer 0 --shell 6
     ```
