@@ -94,3 +94,11 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
     python run_prep_halocone_flamingo_subhalos.py
     ```
 
+#### validate_lightcone_hmf.py
+- Validation test 1 (halo mass function):
+  - For each chosen shell, compares the lightcone number density with that of the snapshot that filled it. Centrals are compared in M200c and satellites in bound mass.
+  - Makes sky-coverage maps and reports the fraction of satellites whose host is in  the ligthcone.
+ 
+    ```bash
+    python validate_lightcone_hmf.py halo_lightcone_flamingo_subhalos_obs750.h5 --shells 0 5 10 20 30 40 --out plots/hmf
+    ```
