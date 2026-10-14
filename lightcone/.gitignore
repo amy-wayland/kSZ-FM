@@ -1,0 +1,10 @@
+   soap_subset/
+   maps/
+   plots/
+   figures/
+   *.h5
+   *.hdf5
+   flamingo_*.txt
+   python-*.out
+   python.sh
+   __pycache__/
