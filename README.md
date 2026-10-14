@@ -73,7 +73,7 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 #### fetch_flamingo_soap.py
 - Downloads the halo catalogues:
   - Streams only the needed columns and rows of the SOAP-HBT catalogues from the public FLAMINGo server into small local files (`soap_subset/').
-  - Writes `flamingo_shells_z.txt' (shell redshift edges) and `flamingo_halo_files.txt' (catalogue paths), which the run script reads.
+  - Writes 'flamingo_shells_z.txt' (shell redshift edges) and 'flamingo_halo_files.txt' (catalogue paths), which the run script reads.
   - The mass cuts only decide what is downloaded. Fetch at or below the cuts used in step 3.
 
     ```bash
@@ -88,7 +88,7 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 #### run_prep_halocone_flamingo_subhalos.py
 - Construct the lightcone using prep_halo.py:
   - Sets the cosmology, mass cuts, and observer position at (750, 750, 750) cMpc, which matches FLAMINGO's `lightcone0' maps.
-  - Writes `halo_ligthcone_flamingo_subhalos_obs750.h5'.
+  - Writes 'halo_ligthcone_flamingo_subhalos_obs750.h5'.
  
     ```bash
     python run_prep_halocone_flamingo_subhalos.py
