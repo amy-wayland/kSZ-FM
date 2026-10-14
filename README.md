@@ -1,15 +1,14 @@
 # kSZ Forward Model
 
-## Requirements
+## Part 1: FLAMINGO validation data
+
+The code in the validation folder reproduces the stacked kSZ profile from the public FLAMINGO data. This will form the validation data vector against which to build the forward model. The measurement follows McCarthy et al. 2024 (arXiv:2410.19905).
+
+### Requirements
 
 ```bash
 python -m pip install -r requirements.txt
 ```
-
-
-## Part 1: FLAMINGO validation data
-
-The code in the validation folder reproduces the stacked kSZ profile from the public FLAMINGO data. This will form the validation data vector against which to build the forward model. The measurement follows McCarthy et al. 2024 (arXiv:2410.19905).
 
 ### Quick start
 
@@ -72,15 +71,26 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 ### Pipeline
 
 #### fetch_flamingo_soap.py
-- Streams only the needed columns and rows of the SOAP-HBT catalogues from the public FLAMINGo server into small local files (`soap_subset/').
-- Writes `flamingo_shells_z.txt' (shell redshift edges) and `flamingo_halo_files.txt' (catalogue paths), which the run script reads.
-- The mass cuts only decide what is downloaded. Fetch at or below the cuts used in step 3.
+- Downloads the halo catalogues:
+  - Streams only the needed columns and rows of the SOAP-HBT catalogues from the public FLAMINGo server into small local files (`soap_subset/').
+  - Writes `flamingo_shells_z.txt' (shell redshift edges) and `flamingo_halo_files.txt' (catalogue paths), which the run script reads.
+  - The mass cuts only decide what is downloaded. Fetch at or below the cuts used in step 3.
 
     ```bash
     python fetch_flamingo_soap.py --snaps 37-77 --outdir soap_subset --mhalo-min 8e12 --msub-min 1e12 --nmin 100
     ```
-
+    
 #### prep_halocone.py
-- Places the haloes of each snapshot into its redshift shell using periodic box replication and recentring on the observer.
-- Includes centrals (selected on M200c) and satellite subhaloes (selected on bound mass).
+- Lightcone builder:
+  - Places the haloes of each snapshot into its redshift shell using periodic box replication and recentring on the observer.
+  - Includes centrals (selected on M200c) and satellite subhaloes (selected on bound mass).
+
+#### run_prep_halocone_flamingo_subhalos.py
+- Construct the lightcone using prep_halo.py:
+  - Sets the cosmology, mass cuts, and observer position at (750, 750, 750) cMpc, which matches FLAMINGO's `lightcone0' maps.
+  - Writes `halo_ligthcone_flamingo_subhalos_obs750.h5'.
+ 
+    ```bash
+    python run_prep_halocone_flamingo_subhalos.py
+    ```
 
