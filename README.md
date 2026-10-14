@@ -111,3 +111,13 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
     ```bash
     python fetch_healpix_shell.py --observer 0 --shell 6
     ```
+
+#### overlay_halos_on_map.py
+- Validation test 2 (positions):
+  - Overlays lightcone haloes and subhaloes in the radial range of the map on the DMO map.
+
+    ```bash
+    python overlay_halos_on_map.py halo_lightcone_flamingo_subhalos_obs750.h5 \
+    --map maps/L1_m9_DMO_lightcone0_shell6_DarkMatterMass_nside4096.hdf5 \
+    --dataset DarkMatterMass --rmin 834.97 --rmax 961.38 --out plots/overlay_obs750
+    ```
