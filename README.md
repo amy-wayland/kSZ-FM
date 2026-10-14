@@ -105,7 +105,8 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 
 #### fetch_healpix_shell.py
 - Download a DMO map shell:
-  - Downloads one FLAMINGO HEALPix shell, by default 'DarkMatterMass' at $N_{\rm side} = 4096$. A given shell $y$ covers $0.05 y < z < 0.05 (1+y)$.
+  - Downloads one FLAMINGO HEALPix shell, by default 'DarkMatterMass' at $N_{\rm side} = 4096$.
+  - A given shell $y$ covers $0.05 y < z < 0.05 (1+y)$.
   - Prints the comoving radii of the shell in Mpc/h.
  
     ```bash
