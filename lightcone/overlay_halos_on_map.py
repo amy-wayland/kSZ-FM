@@ -222,15 +222,18 @@ def main():
     n = min(args.n_zoom, len(order))
     if n:
         ncol = 3; nrow = int(np.ceil(n / ncol))
-        fig = plt.figure(figsize=(4 * ncol, 4.5 * nrow + 0.4))
+        fig = plt.figure(figsize=(4 * ncol, 4.1 * nrow))
         for k, i in enumerate(order[:n]):
             side_arcmin = max(8 * np.degrees(theta200[i]) * 60, 40 * pix_arcmin)
             hp.gnomview(delta, rot=(lon[i], lat[i]), xsize=300, reso=side_arcmin / 300,
-                        sub=(nrow, ncol, k + 1), fig=fig.number, margins=(0.01, 0.05, 0.01, 0.10),
-                        title=f"M200c={halos['Mvir'][i]:.1e} Msun/h, r={r[i]:.0f} Mpc/h", **norm_kw)
+                        sub=(nrow, ncol, k + 1), fig=fig.number, margins=(0.02, 0.03, 0.02, 0.13),
+                        title="", **norm_kw)
+            mant, expo = f"{halos['Mvir'][i]:.1e}".split("e")
+            plt.gca().set_title(rf"$M_{{200c}}={mant}\times10^{{{int(expo)}}}\,M_\odot/h$" "\n"
+                                rf"$r={r[i]:.0f}\,{{\rm Mpc}}/h$", fontsize=11, pad=4)
             overlay((lon[i], lat[i]), side_arcmin / 120.0)
-        fig.text(0.5, 0.005, "green circles: centrals (radius $\\theta_{200c}$)   cyan dots: satellites",
-                 ha="center", va="bottom", fontsize=11)
+        fig.text(0.5, 0.0, "green circles: centrals (radius $\\theta_{200c}$)   cyan dots: satellites",
+                 ha="center", va="top", fontsize=11)
         fig.savefig(f"{args.out}_zooms.pdf", bbox_inches="tight"); plt.close(fig)
 
     print(f"\nwrote {args.out}_wide.pdf, {args.out}_zooms.pdf, {args.out}_stacked_profiles.pdf")
