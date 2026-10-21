@@ -210,6 +210,15 @@ def load_snapshot_halos(param, halo_file, preamble=""):
                 sel_sat = (~iscentral) & (nbound >= Nmin_sub) & (mbound >= Msub_min)
             else:
                 sel_sat = np.zeros_like(iscentral)
+            sel_cen = iscentral & (n200c >= param.sim.Nmin_per_halo) & (m200c >= param.code.Mhalo_min)
+
+            # Keep only satellites whose host central itself passes the central cut
+            if include_sats and getattr(param.code, 'require_host_above_cut', False):
+                host_all = f["SOAP/HostHaloIndex"][:]
+                idx = np.flatnonzero(sel_sat)
+                hi = host_all[idx]
+                no_host = ~sel_cen[hi]
+                sel_sat[idx[no_host]] = False
             n_cen, n_sat = int(sel_cen.sum()), int(sel_sat.sum())
 
             h = np.zeros(n_cen + n_sat, dtype=dtype)
