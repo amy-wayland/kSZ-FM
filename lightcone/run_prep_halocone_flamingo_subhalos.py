@@ -20,7 +20,7 @@ import h5py
 
 from prep_halocone import build_default_param, prep_lightcone_halos
 
-OUT = "halo_lightcone_flamingo_subhalos_obs750.h5"  # output file
+OUT = "halo_lightcone_flamingo_subhalos_obs750_hostcut.h5"  # output file
 MAX_REPLI = 9
 
 param = build_default_param()
@@ -41,6 +41,7 @@ param.code.Mhalo_min = 8e12          # centrals, M200c [Msun/h]
 param.code.include_satellites = True
 param.code.Msub_min = 1e12           # satellites, bound mass [Msun/h]
 param.sim.Nmin_per_subhalo = 100     # satellites, bound DM particles
+param.code.require_host_above_cut = True 
 
 # FLAMINGO's lightcone0 maps (L1_m9_DMO) have their observer 
 # at (750,750,750) comoving Mpc (h-free) -> 750*h Mpc/h.
@@ -82,6 +83,7 @@ with h5py.File(tmp, "w") as f:
     f.attrs["Mhalo_min"] = param.code.Mhalo_min
     f.attrs["Msub_min"] = param.code.Msub_min
     f.attrs["include_satellites"] = param.code.include_satellites
+    f.attrs["require_host_above_cut"] = param.code.require_host_above_cut
     f.attrs["halo_lc_buffer"] = param.code.halo_lc_buffer
     f.attrs["max_repli"] = MAX_REPLI
     f.attrs["halofile_format"] = param.files.halofile_format
