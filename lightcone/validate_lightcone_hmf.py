@@ -32,6 +32,7 @@ def param_from_lightcone(attrs):
         param.code.include_satellites = bool(attrs["include_satellites"])
         param.code.Msub_min = float(attrs["Msub_min"])
         param.sim.Nmin_per_subhalo = int(attrs["Nmin_per_subhalo"])
+        param.code.require_host_above_cut = bool(attrs.get("require_host_above_cut", False))
     return param
 
 
