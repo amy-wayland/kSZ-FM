@@ -26,8 +26,8 @@ python 05_plot_datavector.py --cap cap_profile.npz --label "FLAMINGO L1_m9"
 #### ksz_utils.py:
 - Contains the physics and geometry that the other scripts import.
 
-#### 00_synethetic_test.py:
-- Constructs an artificial sky with a signal of known amplitude and scape dependence, and checks that the framework recovers it.
+#### 00_synthetic_test.py:
+- Constructs an artificial sky with a signal of known amplitude and scale dependence, and checks that the framework recovers it.
 - The sanity checks performed are:
   - Indexing logic of the CAP profile;
   - Normalisation of the CAP profile;
@@ -73,8 +73,8 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 #### fetch_flamingo_soap.py
 - Download the halo catalogues:
   - Streams only the needed columns and rows of the SOAP-HBT catalogues from the public FLAMINGO server into small local files (`soap_subset/').
-  - Writes 'flamingo_shells_z.txt' (shell redshift edges) and 'flamingo_halo_files.txt' (catalogue paths), which the run script reads.
-  - The mass cuts only decide what is downloaded. Fetch at or below the cuts used in step 3.
+  - Writes `flamingo_halo_files.txt` (catalogue paths), which the run script reads.
+  - The mass cuts only decide what is downloaded. Fetch at or below the cuts used to build the lightcone.
 
     ```bash
     python fetch_flamingo_soap.py --snaps 37-77 --outdir soap_subset --mhalo-min 8e12 --msub-min 1e12 --nmin 100
@@ -92,7 +92,7 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
     
 #### prep_halocone_crossing.py
 - Lightcone builder with crossing-based placement:
-  - Reads each snapshot catalogue and applies the cuts: centrals in M200c and satellite in bound mass.
+  - Reads each snapshot catalogue and applies the cuts: centrals in M200c and satellites in bound mass. Satellites are kept only if their host passes the central cut.
   - The FLAMINGO maps record each particle when it crosses the lightcone, but haloes exist only at snapshot times. Each map shell is therefore built from the two snapshots at its edges.
   - Every halo is matched between them by its HBT `TrackId`, moved on a straight line, and placed where it crosses the lightcone. Output shells coincide with the map shells.
 
@@ -108,15 +108,15 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 - Validation test 1 (halo mass function):
   - For each chosen shell, compares the lightcone number density with that of the snapshot at the shell's lower edge, in which its objects were selected.
   - Centrals are compared in M200c and satellites in bound mass.
-  - Makes sky-coverage maps and reports the fraction of satellites whose host is in  the ligthcone.
+  - Makes sky-coverage maps and reports the fraction of satellites whose host is in the lightcone.
  
     ```bash
-    python validate_lightcone_hmf.py halo_lightcone_flamingo_subhalos_obs750.h5 --shells 0 5 10 20 30 40 --out plots/hmf
+    python validate_lightcone_hmf.py halo_lightcone_flamingo_crossing_obs750_hostcut.h5 --shells 0 8 16 24 32 39 --out plots/hmf
     ```
 
 #### fetch_healpix_shell.py
 - Download a DMO map shell:
-  - Downloads one FLAMINGO HEALPix shell, by default `DarkMatterMass' at $N_{\rm side} = 4096$.
+  - Downloads one FLAMINGO HEALPix shell, by default `DarkMatterMass` at $N_{\rm side} = 4096$.
   - A given shell $y$ covers $0.05 y < z < 0.05 (1+y)$.
   - Prints the comoving radii of the shell in Mpc/h.
  
