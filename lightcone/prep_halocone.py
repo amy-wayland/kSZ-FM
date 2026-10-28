@@ -190,6 +190,11 @@ def load_snapshot_halos(param, halo_file, preamble=""):
         names = "ID,IDhost,Mvir,Nvir,x,y,z,vx,vy,vz,rvir,b_ov_a,c_ov_a,Eax,Eay,Eaz,Ebx,Eby,Ebz,Ecx,Ecy,Ecz,cvir"
         dtype = [(n, np.int64 if n in ('ID', 'IDhost', 'Nvir') else np.float64) for n in names.split(',')]
         dtype += [("Mbound", np.float64), ("is_central", np.int8)]
+        # HBT TrackId (persistent across snapshots), needed by the crossing-based builder
+        # (prep_halocone_crossing.py). Off by default so older soap_subset files still work.
+        with_trackid = getattr(param.code, 'with_trackid', False)
+        if with_trackid:
+            dtype += [("TrackId", np.int64)]
 
         h_hubble = getattr(param.cosmo, 'h0')
         include_sats = getattr(param.code, 'include_satellites', False)
@@ -210,7 +215,6 @@ def load_snapshot_halos(param, halo_file, preamble=""):
                 sel_sat = (~iscentral) & (nbound >= Nmin_sub) & (mbound >= Msub_min)
             else:
                 sel_sat = np.zeros_like(iscentral)
-            sel_cen = iscentral & (n200c >= param.sim.Nmin_per_halo) & (m200c >= param.code.Mhalo_min)
 
             # Keep only satellites whose host central itself passes the central cut
             if include_sats and getattr(param.code, 'require_host_above_cut', False):
@@ -258,6 +262,11 @@ def load_snapshot_halos(param, halo_file, preamble=""):
 
             sel = np.concatenate([np.flatnonzero(sel_cen), np.flatnonzero(sel_sat)])
             h["x"], h["y"], h["z"] = pos_all[sel, 0], pos_all[sel, 1], pos_all[sel, 2]
+            if with_trackid:
+                if "InputHalos/HBTplus/TrackId" not in f:
+                    raise KeyError(preamble + "InputHalos/HBTplus/TrackId missing -- run add_track_info.py "
+                                   "on the soap_subset files first")
+                h["TrackId"] = f["InputHalos/HBTplus/TrackId"][:][sel]
 
         # the per-snapshot ID offset (ID + i_file*ID_STRIDE) must not collide, otherwise
         # satellite -> host matching through IDhost silently breaks
@@ -277,6 +286,8 @@ def load_snapshot_halos(param, halo_file, preamble=""):
                           ("vx", np.float32), ("vy", np.float32), ("vz", np.float32),
                           ("rvir", np.float32), ("cvir", np.float32),
                           ("Mbound", np.float32), ("is_central", np.int8)]
+            if with_trackid:
+                lean_dtype += [("TrackId", np.int64)]
             h_lean = np.zeros(len(h), dtype=lean_dtype)
             for name, _ in lean_dtype:
                 h_lean[name] = h[name]
