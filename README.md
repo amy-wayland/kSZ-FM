@@ -150,3 +150,24 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
     ```bash
     python split_for_bfc.py halo_lightcone_flamingo_crossing_obs750_hostcut.h5 --outdir bfc_halos --shells 0 39
     ```
+
+
+## Part 3: Shell baryonification
+
+Baryonifies the FLAMINGO DMO HEALPix shells with the shell implementation of Schneider et al. (2025), using the `euclid_fs2` branch of https://github.com/aurelschneider/baryonification.
+
+### Pipeline
+
+#### run_bfc_flamingo.py
+- Sets up and runs the `ShellDisplacer`: FLAMINGO cosmology, FLAMINGO-calibrated baryonic parameters (`--model fiducial` or `fgas_8sigma`), multi-component output (dark matter, gas, stars), haloes above `--mhalo-min`, input maps and per-shell halo files.
+
+#### check_bfc_output.py
+- Checks a baryonified shell against the DMO input:
+  - Combines the components as $\rho_{\rm tot} = (1-f_{\rm b})\,\rho_{\rm dm} + f_{\rm b}\,(\rho_{\rm gas} + \rho_{\rm star})$.
+  - Mass conservation and component fractions, the ratio $C_\ell^{\rm bfc}/C_\ell^{\rm DMO}$, and a zoom on the most massive halo.
+
+    ```bash
+    python check_bfc_output.py bfc_fiducial_shell2_nside4096.h5 --shell 2 \
+        --map maps/L1_m9_DMO_lightcone0_shell2_DarkMatterMass_nside4096.hdf5 \
+        --halos bfc_halos/halo_lightcone_shell_2.h5 --out plots/bfc_check_shell2
+    ```
