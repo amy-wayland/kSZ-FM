@@ -66,7 +66,7 @@ python 05_plot_datavector.py --cap cap_profile.npz --label "FLAMINGO L1_m9"
 
 ## Part 2: FLAMINGO DMO halo and subhalo lightcone
 
-Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMINGO L1_m9_DMO SOAP-HBT catalogues, and validates it against the snapshot mass functions and the FLAMINGO DMO HEALPix maps.
+Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMINGO L1_m9_DMO SOAP-HBT catalogues, with every object placed where it crosses the lightcone. The pipeline is validated against the snapshot mass functions and the FLAMINGO DMO HEALPix maps.
 
 ### Pipeline
 
@@ -80,23 +80,34 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
     python fetch_flamingo_soap.py --snaps 37-77 --outdir soap_subset --mhalo-min 8e12 --msub-min 1e12 --nmin 100
     ```
     
-#### prep_halocone.py
-- Lightcone builder:
-  - Places the haloes of each snapshot into its redshift shell using periodic box replication and recentring on the observer.
-  - Includes centrals (selected on M200c) and satellite subhaloes (selected on bound mass).
+#### add_track_info.py
+- Adds the HBT track information needed to place haloes at their lightcone crossing:
+  - Writes the `TrackId` of every row into each `soap_subset` file.
+  - For each snapshot, stores the position of every object in the next, later snapshot (`Tracks/`), including objects below the mass cuts at the earlier time.
+  - Resumable; run once after `fetch_flamingo_soap.py`.
 
-#### run_prep_halocone_flamingo_subhalos.py
-- Construct the lightcone using prep_halo.py:
-  - Sets the cosmology, mass cuts, and observer position at (750, 750, 750) cMpc, which matches FLAMINGO's `lightcone0' maps.
-  - Writes 'halo_ligthcone_flamingo_subhalos_obs750.h5'.
+    ```bash
+    python add_track_info.py --snaps 37-77 --outdir soap_subset
+    ```
+    
+#### prep_halocone_crossing.py
+- Lightcone builder with crossing-based placement:
+  - Reads each snapshot catalogue and applies the cuts: centrals in M200c and satellite in bound mass.
+  - The FLAMINGO maps record each particle when it crosses the lightcone, but haloes exist only at snapshot times. Each map shell is therefore built from the two snapshots at its edges.
+  - Every halo is matched between them by its HBT `TrackId`, moved on a straight line, and placed where it crosses the lightcone. Output shells coincide with the map shells.
+
+#### run_prep_halocone_crossing.py
+- Builds the crossing-based lightcone for all 40 shells ($0 < z < 2$):
+  - Sets the cosmology, mass cuts, and observer position at (750, 750, 750) cMpc, which matches FLAMINGO's `lightcone0` maps.
  
     ```bash
-    python run_prep_halocone_flamingo_subhalos.py
+    python run_prep_halocone_crossing.py --out halo_lightcone_flamingo_crossing_obs750_hostcut.h5
     ```
 
 #### validate_lightcone_hmf.py
 - Validation test 1 (halo mass function):
-  - For each chosen shell, compares the lightcone number density with that of the snapshot that filled it. Centrals are compared in M200c and satellites in bound mass.
+  - For each chosen shell, compares the lightcone number density with that of the snapshot at the shell's lower edge, in which its objects were selected.
+  - Centrals are compared in M200c and satellites in bound mass.
   - Makes sky-coverage maps and reports the fraction of satellites whose host is in  the ligthcone.
  
     ```bash
@@ -105,12 +116,12 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
 
 #### fetch_healpix_shell.py
 - Download a DMO map shell:
-  - Downloads one FLAMINGO HEALPix shell, by default 'DarkMatterMass' at $N_{\rm side} = 4096$.
+  - Downloads one FLAMINGO HEALPix shell, by default `DarkMatterMass' at $N_{\rm side} = 4096$.
   - A given shell $y$ covers $0.05 y < z < 0.05 (1+y)$.
   - Prints the comoving radii of the shell in Mpc/h.
  
     ```bash
-    python fetch_healpix_shell.py --observer 0 --shell 6
+    python fetch_healpix_shell.py --observer 0 --shell 2
     ```
 
 #### overlay_halos_on_map.py
@@ -118,7 +129,24 @@ Builds a full-sky halo and subhalo lightcone $(0 < z < 2)$ from the public FLAMI
   - Overlays lightcone haloes and subhaloes in the radial range of the map on the DMO map.
 
     ```bash
-    python overlay_halos_on_map.py halo_lightcone_flamingo_subhalos_obs750.h5 \
-    --map maps/L1_m9_DMO_lightcone0_shell6_DarkMatterMass_nside4096.hdf5 \
-    --dataset DarkMatterMass --rmin 834.97 --rmax 961.38 --out plots/overlay_obs750
+    python overlay_halos_on_map.py halo_lightcone_flamingo_crossing_obs750_hostcut.h5 \
+    --map maps/L1_m9_DMO_lightcone0_shell2_DarkMatterMass_nside4096.hdf5 \
+    --dataset DarkMatterMass --zmin 0.10 --zmax 0.15 --out plots/overlay_shell2
+    ```
+
+#### halo_map_offsets.py
+- Validation test 3 (halo–map offsets):
+  - For centrals in bins of mass, finds the mass centre in the DMO map with a shrinking-circle centroid and reports the median offset from the catalogue position.
+  - Reports the component of the offset along the timing shift a snapshot-based placement would introduce ($\approx 0$ for the crossing-based lightcone).
+
+    ```bash
+    python halo_map_offsets.py halo_lightcone_flamingo_crossing_obs750_hostcut.h5 \
+        --map maps/L1_m9_DMO_lightcone0_shell2_DarkMatterMass_nside4096.hdf5 --out plots/offsets_shell2
+    ```
+
+#### split_for_bfc.py
+- Writes one halo file per map shell in the format read by the baryonification code (centrals only, with M200c, R200c and c200c).
+
+    ```bash
+    python split_for_bfc.py halo_lightcone_flamingo_crossing_obs750_hostcut.h5 --outdir bfc_halos --shells 0 39
     ```
